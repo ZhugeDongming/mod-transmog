@@ -16,7 +16,9 @@
 #include <vector>
 
 #define PRESETS // comment this line to disable preset feature totally
+#define HIDDEN_ITEM_ID 1 // used for hidden transmog - do not use a valid equipment ID
 #define MAX_OPTIONS 25 // do not alter
+#define MAX_SEARCH_STRING_LENGTH 50
 
 class Item;
 class Player;
@@ -26,6 +28,7 @@ struct ItemTemplate;
 enum TransmogSettings
 {
     SETTING_HIDE_TRANSMOG = 0,
+    SETTING_RETROACTIVE_CHECK = 1
 };
 
 enum TransmogAcoreStrings // Language.h might have same entries, appears when executing SQL, change if needed
@@ -47,6 +50,10 @@ enum TransmogAcoreStrings // Language.h might have same entries, appears when ex
 #endif
     LANG_CMD_TRANSMOG_SHOW = 11111,
     LANG_CMD_TRANSMOG_HIDE = 11112,
+    LANG_CMD_TRANSMOG_ADD_UNSUITABLE = 11113,
+    LANG_CMD_TRANSMOG_ADD_FORBIDDEN = 11114,
+    LANG_CMD_TRANSMOG_BEGIN_SYNC = 11115,
+    LANG_CMD_TRANSMOG_COMPLETE_SYNC = 11116,
 };
 
 class Transmogrification
@@ -57,8 +64,11 @@ public:
     typedef std::unordered_map<ObjectGuid, ObjectGuid> transmogData;
     typedef std::unordered_map<ObjectGuid, uint32> transmog2Data;
     typedef std::unordered_map<ObjectGuid, transmog2Data> transmogMap;
+    typedef std::unordered_map<uint32, std::vector<uint32>> collectionCacheMap;
+    typedef std::unordered_map<uint32, std::string> searchStringMap;
     transmogMap entryMap; // entryMap[pGUID][iGUID] = entry
     transmogData dataMap; // dataMap[iGUID] = pGUID
+    collectionCacheMap collectionCache;
 
 #ifdef PRESETS
     bool EnableSetInfo;
@@ -71,6 +81,7 @@ public:
     typedef std::map<uint8, std::string> presetIdMap;
     typedef std::unordered_map<ObjectGuid, presetIdMap> presetNameMap;
     presetNameMap presetByName; // presetByName[pGUID][presetID] = presetName
+    searchStringMap searchStringByPlayer;
 
     void PresetTransmog(Player* player, Item* itemTransmogrified, uint32 fakeEntry, uint8 slot);
 
@@ -111,6 +122,7 @@ public:
     bool AllowLegendary;
     bool AllowArtifact;
     bool AllowHeirloom;
+    bool AllowTradeable;
 
     bool AllowMixedArmorTypes;
     bool AllowMixedWeaponTypes;
@@ -125,7 +137,10 @@ public:
     bool IgnoreReqStats;
 
     bool UseCollectionSystem;
+    bool AllowHiddenTransmog;
     bool TrackUnusableItems;
+    bool RetroActiveAppearances;
+    bool ResetRetroActiveAppearances;
 
     bool IsTransmogEnabled;
 
@@ -133,6 +148,7 @@ public:
     bool IsNotAllowed(uint32 entry) const;
     bool IsAllowedQuality(uint32 quality) const;
     bool IsRangedWeapon(uint32 Class, uint32 SubClass) const;
+    bool CanNeverTransmog(ItemTemplate const* itemTemplate);
 
     void LoadConfig(bool reload); // thread unsafe
 
@@ -145,14 +161,15 @@ public:
     void UpdateItem(Player* player, Item* item) const;
     void DeleteFakeEntry(Player* player, uint8 slot, Item* itemTransmogrified, CharacterDatabaseTransaction* trans = nullptr);
     void SetFakeEntry(Player* player, uint32 newEntry, uint8 slot, Item* itemTransmogrified);
+    bool AddCollectedAppearance(uint32 accountId, uint32 itemId);
 
     TransmogAcoreStrings Transmogrify(Player* player, ObjectGuid itemGUID, uint8 slot, /*uint32 newEntry, */bool no_cost = false);
     TransmogAcoreStrings Transmogrify(Player* player, uint32 itemEntry, uint8 slot, /*uint32 newEntry, */bool no_cost = false);
-    TransmogAcoreStrings Transmogrify(Player* player, Item* itemTransmogrifier, uint8 slot, /*uint32 newEntry, */bool no_cost = false);
+    TransmogAcoreStrings Transmogrify(Player* player, Item* itemTransmogrifier, uint8 slot, /*uint32 newEntry, */bool no_cost = false, bool hidden_transmog = false);
     bool CanTransmogrifyItemWithItem(Player* player, ItemTemplate const* destination, ItemTemplate const* source) const;
     bool SuitableForTransmogrification(Player* player, ItemTemplate const* proto) const;
-    // bool CanBeTransmogrified(Item const* item);
-    // bool CanTransmogrify(Item const* item);
+    bool SuitableForTransmogrification(ObjectGuid guid, ItemTemplate const* proto) const;
+    bool IsItemTransmogrifiable(ItemTemplate const* proto) const;
     uint32 GetSpecialPrice(ItemTemplate const* proto) const;
 
     void DeleteFakeFromDB(ObjectGuid::LowType itemLowGuid, CharacterDatabaseTransaction* trans = nullptr);
@@ -171,9 +188,13 @@ public:
     uint32 GetTransmogNpcText() const;
     bool GetEnableSetInfo() const;
     uint32 GetSetNpcText() const;
+    bool GetAllowTradeable() const;
 
     bool GetUseCollectionSystem() const;
+    bool GetAllowHiddenTransmog() const;
     bool GetTrackUnusableItems() const;
+    bool EnableRetroActiveAppearances() const;
+    bool EnableResetRetroActiveAppearances() const;
     [[nodiscard]] bool IsEnabled() const;
 };
 #define sTransmogrification Transmogrification::instance()

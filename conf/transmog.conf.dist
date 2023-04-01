@@ -18,10 +18,25 @@
 #                     If disabled, players must have an item in their bags to use as a transmogrification appearance source.
 #        Default:     1
 #
+#    Transmogrification.AllowHiddenTransmog
+#        Description: Enables/Disables the hiding of equipment through transmog
+#                     If enabled, players can select an "invisible" appearance for items at the transmog vendor
+#        Default:     1
+#
 #    Transmogrification.TrackUnusableItems
 #        Description: If enabled, appearances are collected even for items that are not suitable for transmogrification.
 #                     This allows these appearances to be used later if the configuration is changed.
 #        Default:     1
+#
+#    Transmogrification.RetroActiveAppearances
+#        Description: Enables/Disables checking all completed quests for uncollected appearances.
+#                     Occurs only once per player.
+#        Default:    1
+#
+#    Transmogrification.ResetRetroActiveAppearancesFlag
+#        Description: Resets the flag indicating whether the retroactive appearance check has been run.
+#                     Occurs for each character on log in.
+#        Default:    0
 #
 #    Transmogrification.EnableTransmogInfo
 #        Description: Enables / Disables the info button for transmogrification
@@ -43,7 +58,10 @@
 
 Transmogrification.Enable = 1
 Transmogrification.UseCollectionSystem = 1
+Transmogrification.AllowHiddenTransmog = 1
 Transmogrification.TrackUnusableItems = 1
+Transmogrification.RetroActiveAppearances = 1
+Transmogrification.ResetRetroActiveAppearancesFlag = 0
 
 Transmogrification.EnableTransmogInfo = 1
 Transmogrification.TransmogNpcText = 601083
@@ -121,6 +139,10 @@ Transmogrification.TokenAmount = 1
 #        Description: Allow heirloom quality items to be used as source and target items
 #        Default:    1
 #
+#    Transmogrification.AllowTradeable
+#        Description: Allow items that are tradeable (i.e. During 2 hour grace period during an instance)
+#        Default:    0
+#
 #    Transmogrification.AllowMixedArmorTypes
 #        Description: Allow cloth items to be transmogrified with plate for example
 #        Default:    0
@@ -169,6 +191,7 @@ Transmogrification.AllowEpic = 1
 Transmogrification.AllowLegendary = 0
 Transmogrification.AllowArtifact = 0
 Transmogrification.AllowHeirloom = 1
+Transmogrification.AllowTradeable = 0
 
 Transmogrification.AllowMixedArmorTypes = 0
 Transmogrification.AllowMixedWeaponTypes = 0
